@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonAuth - Современная авторизация</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f9f9f9;
+            --success: #00b894;
+            --error: #d63031;
+            --gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --neon-glow: 0 0 20px rgba(108, 92, 231, 0.5);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--neon-glow);
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: var(--neon-glow);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: var(--neon-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--light);
+            border: 2px solid var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(162, 155, 254, 0.1);
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .auth-form {
+            background: rgba(45, 52, 54, 0.95);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+
+        .close-auth {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-auth:hover {
+            color: var(--secondary);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 50px;
+            color: var(--light);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 15px;
+        }
+
+        .form-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .form-switch {
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content {
+            width: 100%;
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--neon-glow);
+            border-color: var(--secondary);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            width: 100%;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-top: 30px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-welcome {
+            font-size: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px 25px;
+            border-radius: 50px;
+            margin: 15px 0;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .message.success {
+            background: rgba(0, 184, 148, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(214, 48, 49, 0.2);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .auth-form {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-user-astronaut"></i>
+                <span>NeonAuth</span>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="#"><i class="fas fa-star"></i> Возможности</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> О нас</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Контакты</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-menu" id="userMenu">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <div class="avatar" id="userAvatar">U</div>
+                    <span id="userName">Пользователь</span>
+                </div>
+                <button class="btn btn-primary" id="authBtn">Войти</button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="hero">
+                <h1>Современная система авторизации</h1>
+                <p>Инновационная платформа с неоновым дизайном, обеспечивающая безопасный доступ к персонализированным возможностям и контенту.</p>
+                <button class="btn btn-primary" id="startBtn">Начать сейчас</button>
+            </div>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="dashboard" id="dashboard">
+                <div class="dashboard-header">
+                    <h2 class="dashboard-title">Личный кабинет</h2>
+                    <div class="user-welcome">Добро пожаловать, <span id="dashboardUserName">Пользователь</span>!</div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDays">0</div>
+                        <div class="stat-label">Дней с нами</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statLevel">1</div>
+                        <div class="stat-label">Уровень аккаунта</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statCompleted">0</div>
+                        <div class="stat-label">Выполнено задач</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-content">
+                    <h3>Ваши активные проекты</h3>
+                    <p style="margin-top: 20px; color: rgba(255, 255, 255, 0.7);">Здесь будет отображаться ваш персонализированный контент...</p>
+                </div>
+                
+                <button class="btn btn-secondary" id="logoutBtn" style="margin-top: 40px;">Выйти из аккаунта</button>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Безопасность</h3>
+                    <p>Передовые технологии шифрования обеспечивают полную защиту ваших данных и личной информации.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Скорость</h3>
+                    <p>Мгновенная авторизация и доступ к ресурсам без задержек и ожидания загрузки.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>Кастомизация</h3>
+                    <p>Настройте интерфейс под свои предпочтения: темы, цвета, расположение элементов.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 NeonAuth. Все права защищены.</p>
+            <p style="margin-top: 10px; font-size: 14px;">Современное решение для авторизации пользователей</p>
+        </footer>
+    </div>
+    
+    <!-- Авторизация -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-form" id="loginForm">
+            <button class="close-auth" id="closeAuth">&times;</button>
+            <h2 class="form-title">Вход в аккаунт</h2>
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" class="form-input" placeholder="Введите ваш email">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Пароль</label>
+                <input type="password" id="loginPassword" class="form-input" placeholder="Введите ваш пароль">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" id="loginBtn">Войти</button>
+            <div class="form-footer">
+                Нет аккаунта? <a href="#" class="form-switch" data-form="register">Зарегистрироваться</a>
+            </div>
+        </div>
+        
+        <div class="auth-form" id="registerForm" style="display: none;">
+            <button class="close-auth" id="closeAuthReg">&times;</button>
+            <h2 class="form-title">Регистрация</h2>
+            <div class="form-group">
+                <label for="registerName">Имя пользователя</label>
+                <input type="text" id="registerName" class="form-input" placeholder="Введите ваше имя">
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" class="form-input" placeholder="Введите ваш email">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Пароль</label>
+                <input type="password" id="registerPassword" class="form-input" placeholder="Создайте пароль">
+            </div>
+            <div class="form-group">
+                <label for="registerConfirmPassword">Подтверждение пароля</label>
+                <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Повторите пароль">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" id="registerBtn">Зарегистрироваться</button>
+            <div class="form-footer">
+                Уже есть аккаунт? <a href="#" class="form-switch" data-form="login">Войти</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Эмуляция базы данных пользователей
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        
+        // DOM элементы
+        const authContainer = document.getElementById('authContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const authBtn = document.getElementById('authBtn');
+        const closeAuth = document.getElementById('closeAuth');
+        const closeAuthReg = document.getElementById('closeAuthReg');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        const dashboard = document.getElementById('dashboard');
+        const dashboardUserName = document.getElementById('dashboardUserName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const startBtn = document.getElementById('startBtn');
+        const message = document.getElementById('message');
+        const formSwitches = document.querySelectorAll('.form-switch');
+        
+        // Статистика пользователя
+        const statDays = document.getElementById('statDays');
+        const statLevel = document.getElementById('statLevel');
+        const statCompleted = document.getElementById('statCompleted');
+        
+        // Проверка авторизации при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentUser) {
+                updateUIForUser();
+            }
+        });
+        
+        // Показать форму авторизации
+        authBtn.addEventListener('click', () => {
+            if (currentUser) {
+                logout();
+                return;
+            }
+            showAuthForm('login');
+        });
+        
+        // Кнопка "Начать сейчас"
+        startBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showAuthForm('login');
+            }
+        });
+        
+        // Закрытие формы авторизации
+        closeAuth.addEventListener('click', () => {
+            hideAuthForm();
+        });
+        
+        closeAuthReg.addEventListener('click', () => {
+            hideAuthForm();
+        });
+        
+        // Переключение между формами входа и регистрации
+        formSwitches.forEach(switchBtn => {
+            switchBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const formToShow = switchBtn.getAttribute('data-form');
+                showAuthForm(formToShow);
+            });
+        });
+        
+        // Вход пользователя
+        loginBtn.addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showMessage('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = {
+                    name: user.name,
+                    email: user.email,
+                    joinDate: user.joinDate || new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUIForUser();
+                hideAuthForm();
+                showMessage(`Добро пожаловать, ${user.name}!`, 'success');
+            } else {
+                showMessage('Неверный email или пароль', 'error');
+            }
+        });
+        
+        // Регистрация пользователя
+        registerBtn.addEventListener('click', () => {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showMessage('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+            
+            const userExists = users.find(u => u.email === email);
+            
+            if (userExists) {
+                showMessage('Пользователь с таким email уже существует', 'error');
+                return;
+            }
+            
+            const newUser = {
+                name,
+                email,
+                password,
+                joinDate: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            currentUser = {
+                name: newUser.name,
+                email: newUser.email,
+                joinDate: newUser.joinDate
+            };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            updateUIForUser();
+            hideAuthForm();
+            showMessage(`Регистрация успешна! Добро пожаловать, ${name}!`, 'success');
+        });
+        
+        // Выход пользователя
+        logoutBtn.addEventListener('click', logout);
+        
+        // Функции
+        function showAuthForm(formType) {
+            authContainer.style.display = 'flex';
+            if (formType === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+        
+        function hideAuthForm() {
+            authContainer.style.display = 'none';
+            // Очистка полей форм
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerConfirmPassword').value = '';
+        }
+        
+        function updateUIForUser() {
+            // Обновление кнопки входа
+            authBtn.textContent = 'Выйти';
+            
+            // Показать информацию о пользователе
+            userName.textContent = currentUser.name;
+            userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+            userInfo.style.display = 'flex';
+            
+            // Обновление информации в личном кабинете
+            dashboardUserName.textContent = currentUser.name;
+            
+            // Показать личный кабинет
+            dashboard.style.display = 'block';
+            
+            // Обновить статистику
+            updateUserStats();
+        }
+        
+        function updateUserStats() {
+            // Расчет дней с момента регистрации
+            const joinDate = new Date(currentUser.joinDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - joinDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            statDays.textContent = diffDays;
+            
+            // Уровень аккаунта (простая логика)
+            const level = Math.min(Math.floor(diffDays / 30) + 1, 10);
+            statLevel.textContent = level;
+            
+            // Выполненные задачи (случайное число для демо)
+            const completed = Math.floor(Math.random() * 50);
+            statCompleted.textContent = completed;
+        }
+        
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            
+            // Обновление UI
+            authBtn.textContent = 'Войти';
+            userInfo.style.display = 'none';
+            dashboard.style.display = 'none';
+            
+            showMessage('Вы успешно вышли из аккаунта', 'success');
+        }
+        
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            // Скрыть сообщение через 5 секунд
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Закрытие формы авторизации при клике вне формы
+        authContainer.addEventListener('click', (e) => {
+            if (e.target === authContainer) {
+                hideAuthForm();
+            }
+        });
+        
+        // Демонстрационные пользователи (для тестирования)
+        if (users.length === 0) {
+            users = [
+                {
+                    name: "Алексей Иванов",
+                    email: "demo@example.com",
+                    password: "password123",
+                    joinDate: "2023-01-15T10:30:00.000Z"
+                },
+                {
+                    name: "Мария Петрова",
+                    email: "user@example.com",
+                    password: "password123",
+                    joinDate: "2023-03-22T14:45:00.000Z"
+                }
+            ];
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+    </script>
+</body>
+</html>
